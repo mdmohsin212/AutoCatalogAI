@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 project_name = "AutoCatalogAI"
-
 list_of_files = [
     f"{project_name}/app/app.py",
     f"{project_name}/app/inference.py",
