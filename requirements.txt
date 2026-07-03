@@ -1,0 +1,7 @@
+streamlit
+torch
+torchvision
+transformers
+huggingface_hub
+Pillow
+PyYAML
