@@ -18,6 +18,72 @@ def main():
         layout="wide",
     )
 
+    st.markdown(
+        """
+        <style>
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.2rem;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.05rem;
+            margin-bottom: 2rem;
+        }
+        .prediction-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+            background: #ffffff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .prediction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .task-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #374151;
+        }
+        .confidence {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #111827;
+        }
+        .label {
+            font-size: 1.25rem;
+            font-weight: 800;
+            margin-top: 8px;
+            margin-bottom: 10px;
+        }
+        .bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            background: #111827;
+            border-radius: 999px;
+        }
+        .catalog-box {
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 18px;
+            background: #fafafa;
+            margin-bottom: 16px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
     config = load_config("configs/config.yaml")
     repo_id = config.get("model", {}).get(
         "repo_id",

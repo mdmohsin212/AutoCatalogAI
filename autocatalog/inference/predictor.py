@@ -118,6 +118,8 @@ class AutoCatalogPredictor:
         model.load_state_dict(state_dict, strict=True)
         model.to(self.device)
         
+        return model
+        
     
     def _prepare_image(self, image):
         if isinstance(image, Image.Image):
