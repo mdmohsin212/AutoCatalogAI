@@ -5,13 +5,4 @@ __pycache__/
 .env
 .venv/
 venv/
-artifacts/models/*
-!artifacts/models/.gitkeep
-artifacts/evaluation/*
-!artifacts/evaluation/.gitkeep
-artifacts/plots/*
-!artifacts/plots/.gitkeep
-artifacts/examples/*
-!artifacts/examples/.gitkeep
-data/processed/*.csv
-.DS_Store
+artifacts/
