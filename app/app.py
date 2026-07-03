@@ -80,15 +80,26 @@ def main():
             border: 1px solid #e5e7eb;
             border-radius: 14px;
             padding: 18px;
-            background: #fafafa;
+            background: #fafafa !important;
+            color: #111827 !important;
             margin-bottom: 16px;
+        }
+        .catalog-box strong {
+            color: #4b5563 !important;
+            text-shadow: none !important;
+        }
+        .catalog-box h3 {
+            color: #111827 !important;
+            margin-top: 4px;
+            margin-bottom: 0px;
+            text-shadow: none !important;
         }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    config = load_config("configs/config.yaml")
+    config = load_config(str(ROOT_DIR / "configs" / "config.yaml"))
     repo_id = config.get("model", {}).get(
         "repo_id",
         "mohsin416/autocatalogai-clip-multitask",
@@ -140,7 +151,7 @@ def main():
         
         if uploaded_file is not None:
             image = Image.open(uploaded_file).convert("RGB")
-            st.image(image, caption="Uploaded Image", use_container_width=True)
+            st.image(image, caption="Uploaded Image", width="stretch")
 
     with right_col:
         st.subheader("Prediction Result")
@@ -149,7 +160,7 @@ def main():
             st.info("Upload a fashion product image to generate catalog attributes.")
             return
 
-        if st.button("Generate Catalog", type="primary", use_container_width=True):
+        if st.button("Generate Catalog", type="primary", width="stretch"):
             with st.spinner("Predicting product attributes..."):
                 result = predictor.predict(
                     image=image,
@@ -193,7 +204,7 @@ def main():
                 data=json_output,
                 file_name="autocatalogai_prediction.json",
                 mime="application/json",
-                use_container_width=True,
+                width="stretch",
             )
 
             with st.expander("Raw JSON Output"):
