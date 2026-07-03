@@ -35,7 +35,8 @@ def main():
             border-radius: 14px;
             padding: 16px;
             margin-bottom: 12px;
-            background: #ffffff;
+            background: #ffffff !important;
+            color: #111827 !important;
             box-shadow: 0 1px 4px rgba(0,0,0,0.04);
         }
         .prediction-header {
@@ -46,18 +47,22 @@ def main():
         .task-name {
             font-size: 0.9rem;
             font-weight: 700;
-            color: #374151;
+            color: #374151 !important;
+            text-shadow: none !important;
         }
         .confidence {
             font-size: 0.9rem;
             font-weight: 700;
-            color: #111827;
+            color: #111827 !important;
+            text-shadow: none !important;
         }
         .label {
             font-size: 1.25rem;
             font-weight: 800;
+            color: #111827 !important;
             margin-top: 8px;
             margin-bottom: 10px;
+            text-shadow: none !important;
         }
         .bar-bg {
             width: 100%;
