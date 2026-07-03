@@ -38,9 +38,17 @@ class CLIPMultiTaskClassifier(nn.Module):
 
     
     def forward(self, pixel_values):
-        image_features = self.clip.get_image_features(pixel_values=pixel_values)
+        output = self.clip.get_image_features(pixel_values=pixel_values)
+        
+        if hasattr(output, "pooler_output"):
+            image_features = output.pooler_output
+        elif isinstance(output, torch.Tensor):
+            image_features = output
+        else:
+            image_features = output[0]
+        
         image_features = F.normalize(image_features, dim=-1)
-
+        
         return {
             task : head(image_features)
             for task, head in self.heads.items()
