@@ -34,7 +34,7 @@ class AutoCatalogPredictor:
             repo_type="model"
         )
         
-        self.label_map = hf_hub_download(
+        self.label_maps_path = hf_hub_download(
             repo_id=self.repo_id,
             filename="label_maps.json",
             repo_type="model"
