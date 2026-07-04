@@ -5,7 +5,7 @@ COLOR_IMAGE_SIZE = 128
 COLOR_FEATURE_DIM = 37
 
 def extract_color_features(image, image_size=COLOR_IMAGE_SIZE):
-    image = image.conver("RGB").resize((image_size, image_size))
+    image = image.convert("RGB").resize((image_size, image_size))
     margin = int(image_size * 0.10)
     
     image = image.crop((

@@ -58,4 +58,4 @@ def render_metrics(metrics):
     col1.metric("Average Accuracy", format_percent(overall.get("average_accuracy", 0)))
     col2.metric("Weighted F1", format_percent(overall.get("average_weighted_f1", 0)))
     col3.metric("Top-3 Accuracy", format_percent(overall.get("average_top3_accuracy", 0)))
-    col4.metric("Test Samples", f"{overall.get('test_samples', 0):,}")
+    col4.metric("Test Samples", f"{overall.get('samples', 0):,}")
