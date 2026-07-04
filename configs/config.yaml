@@ -1,0 +1,11 @@
+project:
+  name: AutoCatalogAI
+  version: "2.0"
+
+model:
+  repo_id: mohsin416/autocatalogai-clip-multitask-v2
+
+inference:
+  device: null
+  top_k: 3
+  apply_consistency_rules: true

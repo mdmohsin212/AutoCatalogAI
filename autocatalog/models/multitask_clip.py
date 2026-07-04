@@ -15,7 +15,7 @@ class CLIPMultiTaskClassifierV2(nn.Module):
                 embedding_dim=embedding_dim,
                 num_classes=num_classes,
                 hidden_dim=hidden_dim,
-                dropout=droput,
+                dropout=dropout,
             )
             for task, num_classes in task_num_classes.items()
         })

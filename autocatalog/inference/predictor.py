@@ -2,20 +2,30 @@ import json
 import os
 import time
 from pathlib import Path
+
 import numpy as np
 import torch
 from huggingface_hub import hf_hub_download
 from PIL import Image
 from transformers import CLIPImageProcessor
+
 from autocatalog.data.preprocessing import extract_color_features
 from autocatalog.inference.catalog_generator import generate_catalog_output
 from autocatalog.models.multitask_clip import CLIPMultiTaskClassifierV2
 from autocatalog.utils.logger import get_logger
+
+
 logger = get_logger(__name__)
 
 
 class AutoCatalogPredictor:
-    def __init__(self, repo_id="mohsin416/autocatalogai-clip-multitask-v2", device=None, top_k=3, apply_consistency_rules=True):
+    def __init__(
+        self,
+        repo_id="mohsin416/autocatalogai-clip-multitask-v2",
+        device=None,
+        top_k=3,
+        apply_consistency_rules=True,
+    ):
         self.repo_id = repo_id
         self.device = torch.device(
             device
@@ -27,44 +37,41 @@ class AutoCatalogPredictor:
         )
 
         self.top_k = top_k
-        
-        self.model_path = hf_hub_download(
-            repo_id=self.repo_id,
-            filename="model.pt",
-            repo_type="model"
+        self.apply_consistency_rules = apply_consistency_rules
+
+        logger.info(
+            "Loading V2 model from Hugging Face | repo=%s | device=%s",
+            self.repo_id,
+            self.device,
         )
-        
-        self.config_path = hf_hub_download(
-            repo_id=self.repo_id,
-            filename="config.json",
-            repo_type="model"
+
+        self.model_path = self._download("model.pt")
+        self.config = self._load_json(
+            self._download("config.json")
         )
-        
-        self.label_map = hf_hub_download(
-            repo_id=self.repo_id,
-            filename="label_maps.json",
-            repo_type="model"
+        self.label_maps = self._load_json(
+            self._download("label_maps.json")
         )
-        
-        self.metrics_path = self._try_download("metrics.json")
-        
-        self.config = self._load_json(self.config_path)
-        self.label_maps = self._load_json(self.label_maps_path)
-        self.metrics = self._load_json(self.metrics_path) if self.metrics_path else {}
-        
-        self.tasks = self.config.get("tasks") or list(self.label_maps.keys())
-        self.base_model_name = self.config.get("base_model_name") or self.config.get("model_name")
-        self.hidden_dim = self.config.get("hidden_dim", 512)
-        self.dropout = self.config.get("dropout", 0.2)
-        self.unfreeze_last_n_vision_layers = self.config.get("unfreeze_last_n_vision_layers", 0)
-        
-        if self.base_model_name is None:
-            self.base_model_name = "openai/clip-vit-base-patch32"
-        
-        self.task_num_classes = self._get_task_num_classes()
-        self.processor = CLIPImageProcessor.from_pretrained(self.base_model_name)
+        self.consistency_rules = self._load_json(
+            self._download("consistency_rules.json")
+        )
+        self.metrics = self._load_json(
+            self._download("metrics.json")
+        )
+
+        self.tasks = self.config["tasks"]
+        self.model_name = self.config["base_model_name"]
+
+        self.processor = CLIPImageProcessor.from_pretrained(
+            self.model_name
+        )
+
         self.model = self._load_model()
-        logger.info("V2 model loaded successfully | tasks=%d",len(self.tasks),)
+
+        logger.info(
+            "V2 model loaded successfully | tasks=%d",
+            len(self.tasks),
+        )
 
     def _download(self, filename):
         return hf_hub_download(
@@ -112,9 +119,12 @@ class AutoCatalogPredictor:
         )
 
         model.to(self.device)
-        
-    
-    def _prepare_image(self, image):
+        model.eval()
+
+        return model
+
+    @staticmethod
+    def _prepare_image(image):
         if isinstance(image, Image.Image):
             return image.convert("RGB")
 
@@ -128,9 +138,14 @@ class AutoCatalogPredictor:
         corrections = []
 
         article_id = predicted_ids["articleType"]
-        article_label = self.label_maps["articleType"]["id2label"][str(article_id)]
 
-        article_confidence = probabilities["articleType"][article_id]
+        article_label = self.label_maps[
+            "articleType"
+        ]["id2label"][str(article_id)]
+
+        article_confidence = probabilities[
+            "articleType"
+        ][article_id]
 
         if article_confidence < 0.65:
             return corrected_ids, corrections
@@ -170,13 +185,20 @@ class AutoCatalogPredictor:
                 continue
 
             target_label = rule["target"]
-            target_id = self.label_maps[target_task]["label2id"][target_label]
+
+            target_id = self.label_maps[
+                target_task
+            ]["label2id"][target_label]
 
             old_id = corrected_ids[target_task]
+
             if old_id == target_id:
                 continue
 
-            old_label = self.label_maps[target_task]["id2label"][str(old_id)]
+            old_label = self.label_maps[
+                target_task
+            ]["id2label"][str(old_id)]
+
             corrected_ids[target_task] = target_id
 
             corrections.append(
@@ -190,8 +212,14 @@ class AutoCatalogPredictor:
         return corrected_ids, corrections
 
     @torch.inference_mode()
-    def predict(self, image,top_k=None,apply_consistency_rules=None,):
+    def predict(
+        self,
+        image,
+        top_k=None,
+        apply_consistency_rules=None,
+    ):
         started_at = time.perf_counter()
+
         image = self._prepare_image(image)
 
         pixel_values = self.processor(
@@ -208,6 +236,7 @@ class AutoCatalogPredictor:
             torch.cuda.synchronize()
 
         inference_started_at = time.perf_counter()
+
         outputs = self.model(
             pixel_values,
             color_features,
@@ -250,14 +279,22 @@ class AutoCatalogPredictor:
             )
 
         selected_top_k = top_k or self.top_k
+
         prediction = {}
         simple_predictions = {}
 
         for task in self.tasks:
             task_probs = probabilities[task]
-            k = min(selected_top_k, len(task_probs))
 
-            top_indices = np.argsort(task_probs)[-k:][::-1]
+            k = min(
+                selected_top_k,
+                len(task_probs),
+            )
+
+            top_indices = np.argsort(
+                task_probs
+            )[-k:][::-1]
+
             top_items = [
                 {
                     "label": self.label_maps[
@@ -272,9 +309,14 @@ class AutoCatalogPredictor:
 
             final_id = final_ids[task]
             raw_id = predicted_ids[task]
-            
-            final_label = self.label_maps[task]["id2label"][str(final_id)]
-            raw_label = self.label_maps[task]["id2label"][str(raw_id)]
+
+            final_label = self.label_maps[
+                task
+            ]["id2label"][str(final_id)]
+
+            raw_label = self.label_maps[
+                task
+            ]["id2label"][str(raw_id)]
 
             prediction[task] = {
                 "label": final_label,
@@ -292,8 +334,12 @@ class AutoCatalogPredictor:
 
             simple_predictions[task] = final_label
 
-        total_time_ms = (time.perf_counter() - started_at) * 1000
-        logger.info("Prediction completed | inference_ms=%.2f | total_ms=%.2f",inference_time_ms,total_time_ms,)
+        total_time_ms = (
+            time.perf_counter() - started_at
+        ) * 1000
+
+        logger.info(
+            "Prediction completed | inference_ms=%.2f | total_ms=%.2f",inference_time_ms,total_time_ms,)
 
         return {
             "prediction": prediction,
