@@ -4,27 +4,11 @@ import torch.nn.functional as F
 from transformers import CLIPModel
 from autocatalog.models.heads import ClassificationHead
 
-class CLIPMultiTaskClassifier(nn.Module):
-    def __init__(self, model_name, task_num_classes, hidden_dim=512, droput=0.2, unfreeze_last_n_vision_layers=0):
+
+class CLIPMultiTaskClassifierV2(nn.Module):
+    def __init__(self, model_name, task_num_classes, hidden_dim=512, dropout=0.2, color_feature_dim=37):
         super().__init__()
         self.clip = CLIPModel.from_pretrained(model_name)
-        
-        for param in self.clip.parameters():
-            param.requires_grad = False
-        
-        if unfreeze_last_n_vision_layers > 0:
-            vision_layer = self.clip.vision_model.encoder.layers
-            
-            for layer in vision_layer[-unfreeze_last_n_vision_layers:]:
-                for param in layer.parameters():
-                    param.requires_grad = True
-                
-            for param in self.clip.visual_projection.parameters():
-                param.requires_grad = True
-            
-            for param in self.clip.vision_model.post_layernorm.parameters():
-                param.requires_grad = True
-        
         embedding_dim = self.clip.config.projection_dim
         self.heads = nn.ModuleDict({
             task : ClassificationHead(
@@ -53,3 +37,19 @@ class CLIPMultiTaskClassifier(nn.Module):
             task : head(image_features)
             for task, head in self.heads.items()
         }
+
+        master_probs = torch.softmax(outputs["masterCategory"].detach(),dim=1)
+        
+        outputs["subCategory"] = (outputs["subCategory"] + self.master_to_sub(master_probs))
+        sub_probs = torch.softmax(outputs["subCategory"].detach(), dim=1)
+        
+        outputs["articleType"] = (outputs["articleType"] + self.sub_to_article(sub_probs))
+        article_probs = torch.softmax(outputs["articleType"].detach(), dim=1)
+
+        outputs["season"] = (outputs["season"] + self.article_to_season(article_probs))
+
+        outputs["usage"] = (outputs["usage"] + self.article_to_usage(article_probs))
+
+        outputs["baseColour"] = (outputs["baseColour"] + self.color_branch(color_features))
+
+        return outputs
