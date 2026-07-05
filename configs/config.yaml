@@ -2,10 +2,88 @@ project:
   name: AutoCatalogAI
   version: "2.0"
 
-model:
-  repo_id: mohsin416/autocatalogai-clip-multitask-v2
+data:
+  dataset_name: ashraq/fashion-product-images-small
 
-inference:
-  device: null
-  top_k: 3
-  apply_consistency_rules: true
+  tasks:
+    - gender
+    - masterCategory
+    - subCategory
+    - articleType
+    - baseColour
+    - season
+    - usage
+
+  train_ratio: 0.70
+  validation_ratio: 0.15
+  test_ratio: 0.15
+
+  seed: 42
+  color_image_size: 128
+  color_feature_dim: 37
+
+  processed_dir: data/processed
+  color_cache_path: artifacts/cache/fashion_color_features_v2.npy
+
+model:
+  source_repo_id: mohsin416/autocatalogai-clip-multitask
+  target_repo_id: mohsin416/autocatalogai-clip-multitask-v2
+  output_dir: artifacts/models/autocatalogai_v2
+
+training:
+  batch_size: 32
+  num_workers: 0
+  use_amp: true
+  max_grad_norm: 1.0
+  weight_decay: 0.01
+  early_stopping_patience: 2
+
+  balanced_tasks:
+    - subCategory
+    - articleType
+    - baseColour
+    - usage
+
+  class_weight_min: 0.75
+  class_weight_max: 2.0
+
+  stage1:
+    epochs: 2
+
+    active_tasks:
+      - gender
+      - subCategory
+      - articleType
+      - baseColour
+      - season
+      - usage
+
+    head_lr: 0.00008
+    new_layer_lr: 0.0003
+
+  stage2:
+    epochs: 3
+
+    active_tasks:
+      - gender
+      - masterCategory
+      - subCategory
+      - articleType
+      - baseColour
+      - season
+      - usage
+
+    head_lr: 0.00005
+    new_layer_lr: 0.0001
+    backbone_lr: 0.000002
+    unfreeze_last_n_vision_layers: 1
+
+evaluation:
+  output_dir: artifacts/evaluation/v2
+
+  safety_thresholds:
+    average_accuracy: 0.78
+    masterCategory_accuracy: 0.93
+    subCategory_accuracy: 0.88
+    articleType_accuracy: 0.75
+    usage_accuracy: 0.75
