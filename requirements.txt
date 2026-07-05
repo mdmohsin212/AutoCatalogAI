@@ -1,8 +1,12 @@
-streamlit
 torch
 torchvision
 transformers
+datasets
 huggingface_hub
+scikit-learn
+pandas
+numpy
 Pillow
 PyYAML
-numpy
+tqdm
+streamlit
