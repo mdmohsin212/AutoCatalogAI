@@ -2,30 +2,20 @@ import json
 import os
 import time
 from pathlib import Path
-
 import numpy as np
 import torch
 from huggingface_hub import hf_hub_download
 from PIL import Image
 from transformers import CLIPImageProcessor
-
 from autocatalog.data.preprocessing import extract_color_features
 from autocatalog.inference.catalog_generator import generate_catalog_output
 from autocatalog.models.multitask_clip import CLIPMultiTaskClassifierV2
 from autocatalog.utils.logger import get_logger
-
-
 logger = get_logger(__name__)
 
 
 class AutoCatalogPredictor:
-    def __init__(
-        self,
-        repo_id="mohsin416/autocatalogai-clip-multitask-v2",
-        device=None,
-        top_k=3,
-        apply_consistency_rules=True,
-    ):
+    def __init__(self,repo_id="mohsin416/autocatalogai-clip-multitask-v2",device=None, top_k=3, apply_consistency_rules=True,):
         self.repo_id = repo_id
         self.device = torch.device(
             device
@@ -38,40 +28,21 @@ class AutoCatalogPredictor:
 
         self.top_k = top_k
         self.apply_consistency_rules = apply_consistency_rules
-
-        logger.info(
-            "Loading V2 model from Hugging Face | repo=%s | device=%s",
-            self.repo_id,
-            self.device,
-        )
+        logger.info("Loading V2 model from Hugging Face | repo=%s | device=%s",self.repo_id, self.device)
 
         self.model_path = self._download("model.pt")
-        self.config = self._load_json(
-            self._download("config.json")
-        )
-        self.label_maps = self._load_json(
-            self._download("label_maps.json")
-        )
-        self.consistency_rules = self._load_json(
-            self._download("consistency_rules.json")
-        )
-        self.metrics = self._load_json(
-            self._download("metrics.json")
-        )
+        self.config = self._load_json(self._download("config.json"))
+        self.label_maps = self._load_json(self._download("label_maps.json"))
+        self.consistency_rules = self._load_json(self._download("consistency_rules.json"))
+        self.metrics = self._load_json(self._download("metrics.json"))
 
         self.tasks = self.config["tasks"]
         self.model_name = self.config["base_model_name"]
 
-        self.processor = CLIPImageProcessor.from_pretrained(
-            self.model_name
-        )
-
+        self.processor = CLIPImageProcessor.from_pretrained(self.model_name)
         self.model = self._load_model()
 
-        logger.info(
-            "V2 model loaded successfully | tasks=%d",
-            len(self.tasks),
-        )
+        logger.info("V2 model loaded successfully | tasks=%d",len(self.tasks))
 
     def _download(self, filename):
         return hf_hub_download(
@@ -101,9 +72,7 @@ class AutoCatalogPredictor:
             )
 
     def _load_model(self):
-        checkpoint = self._load_checkpoint(
-            self.model_path
-        )
+        checkpoint = self._load_checkpoint(self.model_path)
 
         model = CLIPMultiTaskClassifierV2(
             model_name=checkpoint["model_name"],
@@ -113,11 +82,7 @@ class AutoCatalogPredictor:
             color_feature_dim=checkpoint["color_feature_dim"],
         )
 
-        model.load_state_dict(
-            checkpoint["model_state_dict"],
-            strict=True,
-        )
-
+        model.load_state_dict(checkpoint["model_state_dict"],strict=True,)
         model.to(self.device)
         model.eval()
 
@@ -136,16 +101,10 @@ class AutoCatalogPredictor:
     def _apply_rules(self, predicted_ids, probabilities):
         corrected_ids = predicted_ids.copy()
         corrections = []
-
+        
         article_id = predicted_ids["articleType"]
-
-        article_label = self.label_maps[
-            "articleType"
-        ]["id2label"][str(article_id)]
-
-        article_confidence = probabilities[
-            "articleType"
-        ][article_id]
+        article_label = self.label_maps["articleType"]["id2label"][str(article_id)]
+        article_confidence = probabilities["articleType"][article_id]
 
         if article_confidence < 0.65:
             return corrected_ids, corrections
@@ -185,22 +144,15 @@ class AutoCatalogPredictor:
                 continue
 
             target_label = rule["target"]
-
-            target_id = self.label_maps[
-                target_task
-            ]["label2id"][target_label]
-
+            target_id = self.label_maps[target_task]["label2id"][target_label]
+            
             old_id = corrected_ids[target_task]
-
             if old_id == target_id:
                 continue
 
-            old_label = self.label_maps[
-                target_task
-            ]["id2label"][str(old_id)]
+            old_label = self.label_maps[target_task]["id2label"][str(old_id)]
 
             corrected_ids[target_task] = target_id
-
             corrections.append(
                 {
                     "task": target_task,
@@ -219,7 +171,6 @@ class AutoCatalogPredictor:
         apply_consistency_rules=None,
     ):
         started_at = time.perf_counter()
-
         image = self._prepare_image(image)
 
         pixel_values = self.processor(
@@ -236,7 +187,6 @@ class AutoCatalogPredictor:
             torch.cuda.synchronize()
 
         inference_started_at = time.perf_counter()
-
         outputs = self.model(
             pixel_values,
             color_features,
@@ -245,9 +195,7 @@ class AutoCatalogPredictor:
         if self.device.type == "cuda":
             torch.cuda.synchronize()
 
-        inference_time_ms = (
-            time.perf_counter() - inference_started_at
-        ) * 1000
+        inference_time_ms = (time.perf_counter() - inference_started_at) * 1000
 
         probabilities = {}
         predicted_ids = {}
@@ -279,7 +227,6 @@ class AutoCatalogPredictor:
             )
 
         selected_top_k = top_k or self.top_k
-
         prediction = {}
         simple_predictions = {}
 
@@ -334,12 +281,8 @@ class AutoCatalogPredictor:
 
             simple_predictions[task] = final_label
 
-        total_time_ms = (
-            time.perf_counter() - started_at
-        ) * 1000
-
-        logger.info(
-            "Prediction completed | inference_ms=%.2f | total_ms=%.2f",inference_time_ms,total_time_ms,)
+        total_time_ms = (time.perf_counter() - started_at) * 1000
+        logger.info("Prediction completed | inference_ms=%.2f | total_ms=%.2f",inference_time_ms,total_time_ms,)
 
         return {
             "prediction": prediction,
