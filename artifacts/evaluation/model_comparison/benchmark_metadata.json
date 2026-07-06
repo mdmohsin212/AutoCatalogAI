@@ -1,0 +1,37 @@
+{
+  "created_at_utc": "2026-07-06T14:54:13.900213+00:00",
+  "dataset_name": "ashraq/fashion-product-images-small",
+  "dataset_fingerprint": "5cacd020bfdb9ce5",
+  "v1_repo_id": "mohsin416/autocatalogai-clip-multitask",
+  "v2_repo_id": "mohsin416/autocatalogai-clip-multitask-v2",
+  "seed": 42,
+  "train_samples": 30850,
+  "validation_samples": 6611,
+  "test_samples": 6611,
+  "test_split_sha256": "106737acc60a436248d35e8a375a014d8b6e2f26f74b147b6444540b7781c0ec",
+  "tasks": [
+    "gender",
+    "masterCategory",
+    "subCategory",
+    "articleType",
+    "baseColour",
+    "season",
+    "usage"
+  ],
+  "metric_policy": "Raw model predictions for all rows",
+  "latency_policy": {
+    "batch_size": 1,
+    "model_forward_only": true,
+    "preprocessing_excluded": true,
+    "warmup_runs": 20,
+    "measured_runs": 100
+  },
+  "environment": {
+    "python": "3.12.13",
+    "torch": "2.5.1+cu121",
+    "transformers": "4.46.3",
+    "device": "cuda",
+    "gpu": "Tesla P100-PCIE-16GB",
+    "cuda_runtime": "12.1"
+  }
+}

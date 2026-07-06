@@ -1,0 +1,23 @@
+{
+  "Majority Baseline": {
+    "average_accuracy": 0.42628087386822827,
+    "average_macro_f1": 0.07927692465823664,
+    "average_top3_accuracy": 0.7344469174752037,
+    "exact_match_accuracy": 0.009529571925578581,
+    "latency_ms": 0.0005647709000186296
+  },
+  "Frozen CLIP + Heads (V1)": {
+    "average_accuracy": 0.8335026038852995,
+    "average_macro_f1": 0.6568447666058456,
+    "average_top3_accuracy": 0.9711087581303888,
+    "exact_match_accuracy": 0.27938284677053393,
+    "latency_ms": 6.226557110003341
+  },
+  "AutoCatalogAI V2": {
+    "average_accuracy": 0.8747758065561727,
+    "average_macro_f1": 0.6740687827687263,
+    "average_top3_accuracy": 0.981502690321326,
+    "exact_match_accuracy": 0.4046286492209953,
+    "latency_ms": 7.4737231199719645
+  }
+}
