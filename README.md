@@ -151,32 +151,6 @@ streamlit run app/app.py
 
 The interface supports product-image upload, seven attribute predictions, confidence scores, Top-K predictions, suggested product titles, search tags, JSON export, and runtime display.
 
-## Run Prediction from Command Line
-
-```bash
-python scripts/predict_image.py --image path/to/product.jpg
-```
-
-## Upload Model Artifacts
-
-Set a Hugging Face write token:
-
-```bash
-export HF_TOKEN=hf_your_token
-```
-
-On Windows PowerShell:
-
-```powershell
-$env:HF_TOKEN="hf_your_token"
-```
-
-Then upload:
-
-```bash
-python scripts/upload_model.py --config configs/config.yaml
-```
-
 ## Generated Artifacts
 
 ```text
