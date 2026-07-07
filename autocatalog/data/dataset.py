@@ -60,7 +60,6 @@ def create_splits(dataset, tasks, output_dir, seed, train_ratio, validation_rati
 
     dataframe = pd.DataFrame(metadata)
     dataframe["dataset_idx"] = np.arange(len(dataset))
-
     all_indices = dataframe.index.to_numpy()
     temporary_ratio = validation_ratio + test_ratio
 
