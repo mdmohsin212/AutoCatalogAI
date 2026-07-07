@@ -1,8 +1,8 @@
 # AutoCatalogAI
 
-AutoCatalogAI is a CLIP-based multi-task computer vision project for automatic fashion product cataloging. Given a product image, it predicts seven product attributes and generates catalog-ready metadata such as a suggested title, search tags, confidence scores, and JSON output.
+AutoCatalogAI is a CLIP-based multi-task computer vision system for automatic fashion product cataloging. Given a product image, it predicts seven product attributes and generates catalog-ready metadata such as a suggested title, search tags, confidence scores, and JSON output.
 
-The project includes reproducible training, two-stage fine-tuning, evaluation, consistency-aware predictions, latency benchmarking, Hugging Face model artifacts, and a Streamlit interface.
+The project includes reproducible training, two-stage fine-tuning, multi-task evaluation, consistency-aware predictions, latency benchmarking, Hugging Face model artifacts, and a Streamlit interface.
 
 ## Predicted Attributes
 
@@ -38,7 +38,7 @@ Shared Image Embedding
       +--> Usage Head
 ```
 
-The V2 model also includes:
+AutoCatalogAI V2 also includes:
 
 - A lightweight 37-dimensional HSV/RGB colour-feature branch
 - Hierarchical residual connections between related tasks
@@ -58,9 +58,9 @@ ashraq/fashion-product-images-small
 | Validation | 15% |
 | Test | 15% |
 
-## Test Performance
+## Production Test Performance
 
-Production V2 results on 6,611 held-out test images:
+Corrected V2 results on 6,611 held-out test images:
 
 | Metric | Result |
 |---|---:|
@@ -72,6 +72,27 @@ Production V2 results on 6,611 held-out test images:
 | Base Colour Accuracy | 69.72% |
 
 Exact-match accuracy requires all seven attributes to be correct for the same image.
+
+## Model Comparison
+
+All models were evaluated on the same 6,611-image held-out test split using raw predictions and the same metric implementation.
+
+| Model | Avg Accuracy | Avg Macro F1 | Top-3 Accuracy | Exact Match | Latency |
+|---|---:|---:|---:|---:|---:|
+| Majority Baseline | 42.63% | 7.93% | 73.44% | 0.95% | 0.001 ms |
+| Frozen CLIP + Heads (V1) | 83.35% | 65.68% | 97.11% | 27.94% | 6.227 ms |
+| **AutoCatalogAI V2** | **87.48%** | **67.41%** | **98.15%** | **40.46%** | **7.474 ms** |
+
+Latency represents batch-size-1 model-forward time with preprocessing excluded.
+
+The small difference between the production accuracy above and the V2 comparison accuracy comes from the production pipeline applying lightweight consistency correction, while the comparison uses raw predictions for fairness across all models.
+
+The full reproducible comparison is available in:
+
+```text
+notebooks/03_autocatalogai_model_comparison.ipynb
+artifacts/evaluation/model_comparison/
+```
 
 ## Project Structure
 
@@ -149,9 +170,20 @@ This command will:
 streamlit run app/app.py
 ```
 
-The interface supports product-image upload, seven attribute predictions, confidence scores, Top-K predictions, suggested product titles, search tags, JSON export, and runtime display.
+The interface supports:
+
+- Product-image upload
+- Seven attribute predictions
+- Confidence scores
+- Top-K predictions
+- Suggested product titles
+- Search tags
+- JSON export
+- Inference runtime display
 
 ## Generated Artifacts
+
+Model artifacts:
 
 ```text
 artifacts/models/autocatalogai_v2/
@@ -164,12 +196,25 @@ artifacts/models/autocatalogai_v2/
 └── README.md
 ```
 
+Evaluation artifacts:
+
 ```text
 artifacts/evaluation/v2/
 ├── final_metrics.json
 ├── test_predictions.csv
 ├── classification reports
 └── confusion matrices
+```
+
+Comparison artifacts:
+
+```text
+artifacts/evaluation/model_comparison/
+├── model_comparison.csv
+├── model_comparison.json
+├── model_comparison_per_task.csv
+├── benchmark_metadata.json
+└── README_model_comparison.md
 ```
 
 ## Model Repositories
@@ -186,7 +231,7 @@ Experimental optimization checkpoint:
 mohsin416/fashion-attribute-lab
 ```
 
-The production V2 model is used in the application because it provides a better balance between predictive performance, inference latency, deployment simplicity, and maintainability.
+The production V2 model is used in the application because it provides a strong balance between predictive performance, inference latency, deployment simplicity, and maintainability.
 
 ## Limitations
 
