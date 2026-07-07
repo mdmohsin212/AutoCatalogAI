@@ -83,10 +83,6 @@ All models were evaluated on the same 6,611-image held-out test split using raw 
 | Frozen CLIP + Heads (V1) | 83.35% | 65.68% | 97.11% | 27.94% | 6.227 ms |
 | **AutoCatalogAI V2** | **87.48%** | **67.41%** | **98.15%** | **40.46%** | **7.474 ms** |
 
-Latency represents batch-size-1 model-forward time with preprocessing excluded.
-
-The small difference between the production accuracy above and the V2 comparison accuracy comes from the production pipeline applying lightweight consistency correction, while the comparison uses raw predictions for fairness across all models.
-
 The full reproducible comparison is available in:
 
 ```text
