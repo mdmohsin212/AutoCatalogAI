@@ -159,9 +159,8 @@ def main():
 
     with st.spinner("Loading AutoCatalogAI V2 model..."):
         predictor = load_predictor(
-            repo_id=repo_id,
-            device=device,
-            top_k=selected_top_k,
+                repo_id=repo_id,
+                device=device,
         )
 
     metrics = predictor.get_model_metrics()

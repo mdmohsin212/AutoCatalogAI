@@ -94,8 +94,7 @@ artifacts/evaluation/model_comparison/
 
 ```text
 AutoCatalogAI/
-├── app/
-│   ├── app.py
+├── src/
 │   └── inference.py
 ├── autocatalog/
 │   ├── data/
@@ -124,11 +123,10 @@ AutoCatalogAI/
 │   └── config.yaml
 ├── scripts/
 │   ├── train_multitask_clip.py
-│   ├── predict_image.py
-│   └── upload_model.py
 ├── notebooks/
 ├── artifacts/
-├── requirements.txt
+├── app.py
+└── requirements.txt
 └── README.md
 ```
 
