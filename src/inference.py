@@ -8,7 +8,6 @@ def load_predictor(repo_id, device=None):
         device=device,
     )
 
-
 def format_percent(value):
     return f"{value * 100:.2f}%"
 
