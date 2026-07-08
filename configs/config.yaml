@@ -88,3 +88,8 @@ evaluation:
     subCategory_accuracy: 0.88
     articleType_accuracy: 0.75
     usage_accuracy: 0.75
+
+inference:
+  device: null
+  top_k: 3
+  apply_consistency_rules: true
