@@ -26,6 +26,7 @@ data:
   color_cache_path: artifacts/cache/fashion_color_features_v2.npy
 
 model:
+  repo_id: mohsin416/autocatalogai-clip-multitask-v2
   source_repo_id: mohsin416/autocatalogai-clip-multitask
   target_repo_id: mohsin416/autocatalogai-clip-multitask-v2
   output_dir: artifacts/models/autocatalogai_v2
