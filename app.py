@@ -6,13 +6,7 @@ from PIL import Image
 ROOT_DIR = Path(__file__).resolve().parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
-
-from src.inference import (
-    load_predictor,
-    render_metrics,
-    render_prediction_card,
-    render_top_predictions,
-)
+from src.inference import load_predictor,render_metrics,render_prediction_card,render_top_predictions
 from autocatalog.utils.config import load_config
 
 def main():
@@ -21,7 +15,7 @@ def main():
         page_icon="🛍️",
         layout="wide",
     )
-
+    
     st.markdown(
         """
         <style>
@@ -195,9 +189,7 @@ def main():
             type="primary",
             width="stretch",
         ):
-            with st.spinner(
-                "Predicting product attributes..."
-            ):
+            with st.spinner("Predicting product attributes..."):
                 result = predictor.predict(
                     image=image,
                     top_k=selected_top_k,
@@ -207,7 +199,6 @@ def main():
             prediction = result["prediction"]
             catalog_output = result["catalog_output"]
             runtime = result["runtime"]
-
             st.markdown(
                 f"""
                 <div class="catalog-box">
@@ -226,13 +217,8 @@ def main():
             )
 
             st.markdown("**Predicted Attributes**")
-
             for task, task_result in prediction.items():
-                render_prediction_card(
-                    task,
-                    task_result,
-                )
-
+                render_prediction_card(task,task_result,)
                 if task_result.get("corrected"):
                     st.caption(
                         f"Corrected from: "
@@ -241,14 +227,8 @@ def main():
 
             render_top_predictions(prediction)
             st.markdown("**Runtime**")
-            st.write(
-                f"Device: `{runtime['device']}`"
-            )
-            st.write(
-                f"Inference time: "
-                f"`{runtime['inference_time_ms']:.2f} ms`"
-            )
-
+            st.write(f"Device: `{runtime['device']}`")
+            st.write(f"Inference time: "f"`{runtime['inference_time_ms']:.2f} ms`")
             json_output = json.dumps(
                 catalog_output["json_export"],
                 indent=2,
@@ -264,10 +244,7 @@ def main():
             )
 
             with st.expander("Raw JSON Output"):
-                st.json(
-                    catalog_output["json_export"]
-                )
-
+                st.json(catalog_output["json_export"])
 
 if __name__ == "__main__":
     main()
