@@ -99,17 +99,13 @@ def main():
         unsafe_allow_html=True,
     )
 
-    config = load_config(
-        ROOT_DIR / "configs" / "config.yaml"
-    )
-
+    config = load_config(ROOT_DIR / "configs" / "config.yaml")
     repo_id = config.get("model", {}).get(
         "repo_id",
         "mohsin416/autocatalogai-clip-multitask-v2",
     )
 
     inference_config = config.get("inference", {})
-
     top_k = int(inference_config.get("top_k", 3))
     device = inference_config.get("device")
     default_consistency = bool(
@@ -123,7 +119,6 @@ def main():
         '<div class="main-title">AutoCatalogAI V2</div>',
         unsafe_allow_html=True,
     )
-
     st.markdown(
         """
         <div class="subtitle">
@@ -172,7 +167,6 @@ def main():
 
     with left_col:
         st.subheader("Upload Product Image")
-
         uploaded_file = st.file_uploader(
             "Choose a product image",
             type=["jpg", "jpeg", "png", "webp"],
@@ -181,7 +175,6 @@ def main():
 
         if uploaded_file is not None:
             image = Image.open(uploaded_file).convert("RGB")
-
             st.image(
                 image,
                 caption="Uploaded Image",
@@ -190,7 +183,6 @@ def main():
 
     with right_col:
         st.subheader("Prediction Result")
-
         if image is None:
             st.info(
                 "Upload a fashion product image "
